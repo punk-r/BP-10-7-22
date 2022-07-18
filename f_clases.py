@@ -19,8 +19,11 @@ import support_functions
 from support_functions import *
 import screens
 from screens import *
+import Re_reward_rules
+from Re_reward_rules import *
 
-
+import testing_logs
+from testing_logs import *
 
 clock = pygame.time.Clock()
 
@@ -132,8 +135,8 @@ class class_coach ():
     data_trening = []                   # hrac zasle svoje data, ktere trener vyhodnocuje. vse se uklada do data trening a data labels
     data_labels = []
     active_trening = False              # ukazatel treningu nebo zapasu
-    trening_sesion_total_runs = 5000    # 5000  celkovy pocet uceni pro spusteny trening
-    RE_trening_sesion_runs = 10000
+    trening_sesion_total_runs = 500    # 5000  celkovy pocet uceni pro spusteny trening
+    RE_trening_sesion_runs = 5000
     trening_repetition_sequence = 1
     trening_repetition_total = 1
     automated_trening_type = False      # true jestli je spusten zautomatizovy trening
@@ -202,7 +205,11 @@ class class_coach ():
             if self.automated_trening_type != True:
                 #print ("The self.data_trening eight",self.data_trening)
                 #print ("The self.data_labelsht",self.data_labels)
+
                 train_model([self.data_trening], [self.data_labels], player.ID )
+                #train_model_tensorflowboard([self.data_trening], [self.data_labels], player.ID )
+                #print ("The self.data_trening eight",self.data_trening)
+                #self.save_training()   #testy
 
                 '''
                 player.save_trening_time (self.RE_trening_sesion_runs)
@@ -219,11 +226,46 @@ class class_coach ():
                 #train_model(processed_training, processed_labels, processed_training, processed_labels, player.ID)
 
             self.reset_training_arrays()
-            self.update_trening_time(player.ID, 1)
+            self.update_trening_player(player.ID, 1,TreningType.manual_static.value,player)                                                      # dodelat davam vzdy jen manual-static
             #start trainkeras model
             #print(  "po",player.model  )
 
-    def  update_trening_time(self,player_ID,new_time):
+
+    def check_team_training_type(self,list_of_teams,team_index):
+        for players_loop in range (1,6):
+            if players_loop == 1:
+                type_previouse = list_of_teams[team_index][players_loop][7]
+            else:
+                type = list_of_teams[team_index][players_loop][7]
+
+                if  type_previouse == type:
+                    team_training_type = type
+                    type_previouse = type
+                else:
+                    team_training_type = TreningType.mixed.value
+                    return team_training_type
+
+        return team_training_type
+
+    def team_trenings_summary(self,list_of_teams,team_index):
+        summary = 0
+        for players_loop in range (1,6):
+
+            summary = summary + int(list_of_teams[team_index][players_loop][4])
+        return summary
+
+
+    def team_skills_averadge(self,list_of_teams,team_index):
+        summary = 0
+        for players_loop in range (1,6):
+
+            summary = summary +  int(list_of_teams[team_index][players_loop][3])
+
+        summary =  round  ( summary  / 5 ,  2)
+        return summary
+
+
+    def  update_trening_player(self,player_ID,new_time,trening_type,player):
         #print ("player_ID",self.team_play_at)
         #print ("player_ID",player_ID)
         for team_loop in range (0,10):
@@ -233,6 +275,7 @@ class class_coach ():
                     if self.loaded_teams_xml[team_loop][loop_pl][1] == player_ID:
                         # index 4 = trening_time
                         self.loaded_teams_xml[team_loop][loop_pl][4] = str( int( self.loaded_teams_xml[team_loop][loop_pl][4]) + new_time)
+                        self.loaded_teams_xml[team_loop][loop_pl][7] = str( player.save_trening_type(trening_type))
                         create_xml_file(self.loaded_teams_xml[team_loop])
 
     # zmena souradnic pro hrace v prubehu treningu
@@ -290,24 +333,41 @@ class class_coach ():
         self.data_trening = []
         self.data_labels = []
 
-    def save_training(self):                                                                                        # pro testy, aplikace neuklada data do txt
+    def Xsave_training(self):                                                                                        # pro testy, aplikace neuklada data do txt
         #time = datetime.now()
          # dd/mm/YY H:M:S
         #dt_string = time.strftime("%d-%m-%Y_%H-%M-%S")
         #file_name = 'SaveGeme_' + dt_string + '.txt'
         file_name_testing = 'training.txt'
         with open(file_name_testing, 'w') as f:
-            for write_loop in range (0,len(self.data_trening)):
-                f.write( str(self.data_trening[write_loop]))
+            for write_loop in range (0,len(self.data_trening[0][0])):
+                f.write( str(self.data_trening[write_loop][0]))
                 f.write( '\n')
 
         file_name_testing = 'traininglabels.txt'
         with open(file_name_testing, 'w') as f:
             for write_loop in range (0,len(self.data_labels)):
                 f.write( str(self.data_labels[write_loop]))
+                f.write(",")
+
+    def save_training(self):                                                                                        # pro testy, aplikace neuklada data do txt
+        file_name_testing = 'training.txt'
+        #xx =[  [[0,1,2,5,4,5,6,7,8,9,1,1,11]],[[0,1,2,5,4,5,6,7,8,9,1,1,11]]  ]
+        #x = [1,0]
+        with open(file_name_testing, 'w') as f:
+            for write_loop in range (0,len(self.data_trening)):
+                for write_inner_loop in range (0,13):
+                    f.write( str(self.data_trening[write_loop][0][write_inner_loop]))
+                    if write_inner_loop != 12:
+                        f.write( ",")
                 f.write( '\n')
 
-
+        file_name_testing = 'traininglabels.txt'
+        with open(file_name_testing, 'w') as f:
+            for write_loop in range (0,len(self.data_labels)):
+                f.write( str(self.data_labels[write_loop]))
+                if write_loop != (len(self.data_labels)-1):
+                    f.write( ",")
 
     def move_around_team (self,The_field,list_of_ingamers):
         while list_of_ingamers[1].game_status ==  "game" and list_of_ingamers[6].game_status == "game" :
@@ -350,13 +410,9 @@ class class_coach ():
             # nastavi team na status updated => hrac neni ulozeny do xml file
             self.loaded_teams_xml [to_slot[0]][0][1] = "updated"
 
-            # [pl_name, pl_ID,pl_position,skills_level,trening_time]   ,player id dle datetime stamp
-            new_player = [players_names (randint( 0,96 )), \
-                            time.strftime("%d%m%H%M%S"), \
-                            "1", \
-                            str(self.get_selected_createNos()), \
-                            "0", \
-                            copy.deepcopy(self.trainig_code)]
+            #
+            #  player : name, ID, position, skills level, trening time, treningcode, pocet vyher ,jak trenovan
+            new_player = create_new_random_player (copy.deepcopy(self.trainig_code),str(self.get_selected_createNos()) )
 
             self.loaded_teams_xml [to_slot[0]] [to_slot[1]] = new_player
             #print (   self.loaded_teams_xml [to_slot[0]]     )
@@ -819,6 +875,7 @@ class reff ():
                     new_player.skills_level = int(all_teams[teams_lops][players_loop][3])
                     new_player.trening_time = all_teams[teams_lops][players_loop][4]
                     new_player.skills_set =   all_teams[teams_lops][players_loop][5]
+                    new_player.trening_type_player =   all_teams[teams_lops][players_loop][6]
                     #print (new_player.skills_set)
 
                     # nastaveni v zavislosti na teamu

@@ -8,10 +8,6 @@ from  tensorflow.keras.optimizers import Adam
 from gym import Env
 from gym.spaces import Discrete, Box
 
-
-#-from tf_agents.networks import q_network
-#-from tf_agents.agents.dqn import dqn_agent
-
 from rl.agents import DQNAgent
 from rl.policy import BoltzmannQPolicy
 from rl.memory import SequentialMemory
@@ -27,8 +23,8 @@ import pygame
 import support_functions
 from support_functions import *
 
-import screens
-from screens import *
+# import screens
+# from screens import *
 
 pygame.init()
 from pygame.locals import *
@@ -65,8 +61,8 @@ class TrainingEnvironment (Env):
 
     def __init__(self ):
         self.action_space = Discrete(5)
-        self.observation_space = Box(low = np.array([-0.1,-0.1 ,-0.1   ,1,4,5,6,7,8,9,1,1,11]), \
-                                      high= np.array([0.36,0.36,5,5,4,5,6,7,8,9,1,1,11]))
+        self.observation_space = Box(low = np.array([-0.1 ,-0.1,-0.1,1,-1,5,6,7,8,9,1,1,11]), \
+                                      high= np.array([0.36,0.36,  5 ,5, 2,5,6,7,8,9,1,1,11]))
         self.state = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0])
         self.episode_ended = False
         self.The_field = None
@@ -90,6 +86,7 @@ class TrainingEnvironment (Env):
 
     # action number from 0 to 4
     def step(self,action):
+        reward = 0
         ball_index = 0
         done = False
         list_of_ingamers = self.list_of_ingamers
@@ -222,10 +219,39 @@ def run_RE_trening_tf():
     return agent
 
 
+
+def save_trainingXx():
+    file_name_testing = 'training.txt'
+    xx =[  [[8,1,8,5,4,5,6,7,8,9,1,1,11]],[[0,1,2,5,4,5,6,7,8,9,1,1,11]]  ]
+    x = [1,0]
+    with open(file_name_testing, 'w') as f:
+        for write_loop in range (0,len(xx)):
+            for write_inner_loop in range (0,13):
+                f.write( str(xx[write_loop][0][write_inner_loop]))
+                if write_inner_loop != 12:
+                    f.write( ",")
+            f.write( '\n')
+
 '''
 
 
+
+
+'''
+#---------jede
+dat = load_data("training.txt")
+daat = load_datalabels("traininglabels.txt")
+model = create_model_tf2(13)
+print(dat)
+print(daat)
+#x =[   [ [[0,1,2,7,4,5,7,7,8,9,1,1,11]],[[0,1,2,5,4,5,6,7,8,9,1,1,11]]  ]]
+
+model.fit([dat], daat)
+'''
 #---------------------  nasledujici funkce jsou pouze pro testy a kontrolu keras modelu  ----
+
+
+
 
 
 '''

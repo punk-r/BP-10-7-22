@@ -209,6 +209,7 @@ while True:
 
                         The_reff.list_of_ingamers[no_of_ingamers].send_data_to_coach( angle_done,The_reff.list_of_ingamers,The_field  )
 
+
                     #zapamatuj kde je vyber menu podle toho volej co se ma stat metoda/funcke
 
     # musi byt mimo event aby se mohl hrac pohybovat pri stisknutem W
@@ -294,20 +295,19 @@ while True:
 
 
     if screen_ID == Screens.trening.value : # vyber teamu a hrace pro trening
-        #print ("   treningselect screen ")
+        if lower_screen_ID == Screens.trainingautomateddone.value:
+            f_print_treningman_buttons(The_game_window,Screens.trainingautomated.value)
+            f_print_RE_trening_done(The_game_window)
+
         draw_team_managemet(The_game_window,The_field,The_reff,screen_ID)
         f_print_trening_buttons(The_game_window)
         f_print_player_details_off_game(screen_ID,The_reff,The_game_window)
         draw_trening_mini_filed(The_game_window, The_reff , The_field)
-
+        #print ("lower_screen_ID",lower_screen_ID)
         if lower_screen_ID >= Screens.treningmanual.value and \
             lower_screen_ID <= Screens.trainingautomated.value:
 
             f_print_treningman_buttons(The_game_window,lower_screen_ID)
-
-        if lower_screen_ID == Screens.trainingautomateddone.value:
-            f_print_treningman_buttons(The_game_window,Screens.trainingautomated.value)
-            f_print_RE_trening_done(The_game_window)
 
     if screen_ID == Screens.trainingoffscreen.value:
         f_print_trening_progress(The_game_window,The_field,The_reff.coach_team_A,The_reff.coach_team_B)

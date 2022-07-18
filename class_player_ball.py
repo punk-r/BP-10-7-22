@@ -12,7 +12,8 @@ import support_functions
 from support_functions import *
 import screens
 from screens import *
-
+import testing_logs
+from testing_logs import *
 #-ppppppppppak smazat
 import neural_network
 from neural_network import *
@@ -40,8 +41,8 @@ class player (ingamer):
     skills_set = []                           #skill set hrace pri vytoreni
     player_type = "99999"                    # utocnik, obrance, brankar, midfielder
     position_by_strategy = "notSpecified"    # -----ZATIM nepouzito-------
-    strategy = 1                             # -----ZATIM nepouzito-------
-    tactic= 1                                # -----ZATIM nepouzito-------
+    strategy = 0                             # -----ZATIM nepouzito-------
+    tactic= 0                                # -----ZATIM nepouzito-------
     dsetination_kick = "notSpecified"        # -----ZATIM nepouzito-------  asi nebude treba
     vision = 5                            # zatim vyuzitojen pro vykresleni hrace
     ball_owner_b = False                     # pokud je hrac ball owner muze provect kop
@@ -50,8 +51,9 @@ class player (ingamer):
     model = "empty"                                                                                                        # -----zkontrolovat je treba kdyz je znam ID ??
     ID = "empty"                             # DATE TIME STAMP bude stejne jako nazev .h5 souboru
     name ="empty"
-    message = 1                              # -----ZATIM nepouzito-------
+    message = 0                              # -----ZATIM nepouzito-------
     trening_time = 0
+    trening_type_player = 0
 
 
     # ulozi jmeno trenera pro team
@@ -66,6 +68,9 @@ class player (ingamer):
     # pri pohybu(i jine akci) hrace trener zaznamena data,vyuzito pro trenovani
     def send_data_to_coach(self,action,list_of_ingamers,The_field):
         self.team_coach.process_data(self,action, self.get_NN_data(The_field,list_of_ingamers) )
+        #player_trening_info_log(self,action,self.get_NN_data(The_field,list_of_ingamers))
+        #player_toBall_info_log(self,list_of_ingamers[0])
+
 
     def get_NN_data(self,The_field,list_of_ingamers):
         The_ball = list_of_ingamers[0]
@@ -103,21 +108,22 @@ class player (ingamer):
              - krok             (kod 2)
              - kop do mice      (kod 3)
              - bez akce         (kod 4)
-        '''
+
+         '''
+
         #musi byt nulty index list v liste podminka pro keras vstup!
-        inputs = [round(self.path_target/100), \
-                   round(self.calculate_angle_to_other_object(The_ball.rect.center)/100), \
+        inputs = [round(self.path_target/1000,2), \
+                   round(self.calculate_angle_to_other_object(The_ball.rect.center)/1000,2), \
                    # oprava pro rozdil od hrany hrace ne od stredu kruznic (umozni vypocet nezavisle na velikosti hracu a mice)
-                   (round(pythagoras_distance (self.rect.center, The_ball.rect.center) - self.radius - The_ball.radius))/The_field.longest_distance,
+                   round((pythagoras_distance(self.rect.center, The_ball.rect.center) - self.radius - The_ball.radius )/ 1500, 6),
                    # delime 1100 ,to je nejdelsi mozna vzdalenost
                    int(self.player_type), \
                    # testy pak vypocitat polohu
-                   # float(calculate_sector(1,self.field_site,self.rect.center,[The_field.field_width,The_field.field_height],The_field.field_bl_corner)), \
-                   (self.rect.center[0] - self.rect.center[1]) / 1000  , \
+                   round(calculate_sector(1,self.field_site,self.rect.center,[The_field.field_width,The_field.field_height],The_field.field_bl_corner) / 100,4), \
                    1, \
-                   int(self.tactic), \
-                   int(self.strategy), \
-                   int(self.message), \
+                   0, \
+                   0, \
+                   0, \
                    # team u balonu -1 oponent, 0 nikdo neni u balonu, 1 vlastni team je u balonu
                    0 , \
                    # hrac v view -1 oponent, 0 nikdo neni v wiev, 1 vlastni team je
@@ -126,6 +132,16 @@ class player (ingamer):
                    0  ]
 
         return inputs
+
+
+    # nastavi trening pro xml
+    def save_trening_type(self,new_trening):
+        if int(self.trening_type_player) == TreningType.not_trained.value or self.trening_type_player == int(new_trening):
+            self.trening_type_player = new_trening
+        else:
+            self.trening_type_player = TreningType.mixed.value
+        return   self.trening_type_player
+
 
     # pro hrace ovladaneho PC team ma jedno vlakno
     def move_round_once(self,The_field,list_of_ingamers):

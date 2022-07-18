@@ -9,12 +9,18 @@ from random import randint
 import copy
 import screens
 from screens import *
-
+import time
 
 def create_new_default_player(ID,position):
-    #                ukazkovy hrac [pl_name, pl_ID,pl_position(type),skills_level,trening_time,skills_set]]
-    player = [players_names (randint( 0,96 )), ID, position, "13", "0", create_new_skills_set(13)]
+    #                ukazkovy hrac [pl_name, pl_ID,pl_position(type),skills_level,trening_time,skills_set,pocet vyher,trening type]
+    player = [players_names (randint( 0,96 )), ID, position, "13", "0", create_new_skills_set(13), "0","0"]
     return player
+
+def create_new_random_player(training_set,level,):
+    player = [players_names (randint( 0,94 )), time.strftime("%d%m%H%M%S"), "1",  level, \
+                    "0", training_set, "0", "0"]
+    return player
+
 
 # ukazkovy team, ulozen pri prvnim spusteni hry
 # input ma tvar : [team_name,5x [ukazkovy hrac]]
@@ -52,9 +58,11 @@ def create_xml_file(team_data):
         plr_name = Element("plr_name")
         player_ID = Element("player_ID")
         player_type = Element("player_position")
-        trening_type = Element("skills_level")
+        skills_level = Element("skills_level")
         trening_time = Element("trening_time")
         skills_set = Element("skills_set")
+        no_of_wins = Element("no_of_wins")
+        trening_type = Element("trening_type")
 
         root2.append(plr_name)
         plr_name.text = team_data[loop][0]
@@ -62,13 +70,16 @@ def create_xml_file(team_data):
         player_ID.text = team_data[loop][1]
         root2.append(player_type)
         player_type.text= team_data[loop][2]
-        root2.append(trening_type)
-        trening_type.text= team_data[loop][3]
+        root2.append(skills_level)
+        skills_level.text= team_data[loop][3]
         root2.append(trening_time)
         trening_time.text= team_data[loop][4]
         root2.append(skills_set)
         skills_set.text= str(team_data[loop][5])
-
+        root2.append(no_of_wins)
+        no_of_wins.text= str(team_data[loop][6])
+        root2.append(trening_type)
+        trening_type.text= str(team_data[loop][7])
     tree.write(open( get_path_home_folder() + team_data[0][0] + '.xml','wb'))
 
 # funkce vrati list hodnot ctenych z xml pro team
@@ -85,7 +96,9 @@ def f_read_from_xml(file):
                                  player.find('player_position').text, \
                                  player.find('skills_level').text, \
                                  player.find('trening_time').text , \
-                                 player.find('skills_set').text]
+                                 player.find('skills_set').text , \
+                                 player.find('no_of_wins').text , \
+                                 player.find('trening_type').text]
         team_details[player_No][5] = eval( team_details[player_No][5] )
 
         player_No =  player_No + 1

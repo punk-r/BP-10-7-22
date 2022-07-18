@@ -84,6 +84,19 @@ class PlayerType(Enum):
     middfielder = 4
     striker= 5
 
+class TreningType(Enum):
+    not_trained = 0
+    manual_static = 1
+    manual_dynamic = 2
+    automated = 3
+    type4 = 4
+    type5 = 5
+    mixed = 8
+
+def TreningType_text(index):
+    text = [    "not_trained" ,"static","dynamic","automated","type4","type5","","mixed", " " ,  ""]
+    return text[int(index)]
+
 def player_type_text(No_type):
     #print("sss",No_type )
     type = "null"
@@ -102,6 +115,23 @@ def player_type_text(No_type):
 
 #-----------------------------------------FUNKCE--------------------------------------------------------------
 
+
+'''
+     3*3 sektory => 9x sektoru
+     numberes = vzdalenost od vlasni vybrany
+     letters = pozice k vlastni brane
+                  1         2            3
+           ____________________________________
+    A     |                                    |
+         _|           .           .            |_
+    B   | |                                    | |
+        |_|           .           .            |_|
+    C     |                                    |
+          |____________________________________|
+
+'''
+
+# ration rozdeli hriste na sektory napr ration 3 => 3*3 sektory
 def calculate_sector(call_No,site,position_in,The_field_size,The_field_start):
     # na kolik casti se hriste deli
     ratio = 3
@@ -118,12 +148,12 @@ def calculate_sector(call_No,site,position_in,The_field_size,The_field_start):
     # error controla
     for loop in range (0,2):
         if data[loop] < 0:
-            data[loop] = str(0)
+            data[loop] = 0
         elif data[loop] > ratio:
-            data[loop] = str(ratio + 1)
+            data[loop] = ratio + 1
         else:
             # + 1 ,zacina indexem 1 ne 0 jako pole
-            data[loop] = str(data[loop]+1)
+            data[loop] = data[loop] + 1
 
     new_field_size = [int(The_field_size[0] / ratio), int(The_field_size[1] / ratio)]
     new_position_in =[int( position_in[0] + player_position[0]//sector_size[0] * sector_size[0]), \
@@ -133,9 +163,9 @@ def calculate_sector(call_No,site,position_in,The_field_size,The_field_start):
 
     # mezni podminka pro rekurzi
     if call_No == 0:
-        sector = data[0] + data[1]
+        sector = data[0] * 10 + data[1]
     else:
-        sector = data[0] + data[1] + "." + calculate_sector(call_No - 1,site,position_in,new_field_size,new_field_start)
+        sector = data[0] * 10 + data[1] + ( calculate_sector(call_No - 1,site,position_in,new_field_size,new_field_start))/100
     return sector
 
 
@@ -159,7 +189,7 @@ def pythagoras_distance (location_1,location_2):
     ingamer_adjescent =  abs (location_1[0]  -  location_2[0])
     ingamer_opposite =  abs (location_1[1] -  location_2[1])
     ingamer_hypotensue = sqrt(ingamer_adjescent **2 + ingamer_opposite **2)
-    return ingamer_hypotensue
+    return round(ingamer_hypotensue,4)
 
 
 # funkce vypocte zda souradnice oznaceni mysi jsou v oznacene plose-kruhu
@@ -316,17 +346,17 @@ def calculate_trening_area_ratio(sectors):  #vstup sektory hriste
     sectors_ratio = 1/3
 
     '''
-     9x sektoru
-     numberes = vzdalenost od vlasni vybrany
-     letters = pozice k vlastni brane
-                  1         2            3
-           ____________________________________
-    A     |                                    |
-         _|           .           .            |_
-    B   | |                                    | |
-        |_|           .           .            |_|
-    C     |                                    |
-          |____________________________________|
+         3*3 sektory => 9x sektoru
+         numberes = vzdalenost od vlasni vybrany
+         letters = pozice k vlastni brane
+                      1         2            3
+               ____________________________________
+        A     |                                    |
+             _|           .           .            |_
+        B   | |                                    | |
+            |_|           .           .            |_|
+        C     |                                    |
+              |____________________________________|
 
     '''
     for axis_loop in range (0,2):
@@ -428,10 +458,15 @@ def draw_green_tick(position,The_game_window):
                                      (x_point + side/2, y_point)), 4)
 
 if False:
-    test1 = calculate_sector(1,"left",[30, 200],[1216, 503],[15, 568])
-    test1 = calculate_sector(1,"left",[16, 200],[1216, 503],[15, 568])
-    test1 = calculate_sector(1,"right",[45, 200],[1216, 503],[15, 568])
-    test1 = calculate_sector(1,"right",[25, 200],[1216, 503],[15, 568])
+    #calculate_sector(call_No,site,position_in,The_field_size,The_field_start):
+    test1 = calculate_sector(0,"left",[12, 65],[270, 90],[10, 90])
+    print("--",test1)
+    test1 = calculate_sector(1,"left",[12, 65],[270, 90],[10, 90])
+    print("--",test1)
+    test1 = calculate_sector(0,"left",[220, 75],[270, 90],[10, 90])
+    print("--",test1)
+    test1 = calculate_sector(1,"left",[220, 75],[270, 90],[10, 90])
+    print("--",test1)
 
 if False:
     print("-----------------------------------")

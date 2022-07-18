@@ -3,9 +3,6 @@ import os.path
 from os import path
 from threading import  Thread
 
-import screens
-from screens import *
-
 import neural_network
 from neural_network import *
 import reinforsment_learning
@@ -14,8 +11,6 @@ import support_functions
 from support_functions import *
 import xml_f
 from xml_f import *
-
-
 
 
 #pygame modul
@@ -476,6 +471,9 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
         if  button_selected == 2.20 :
             The_reff.coach_team_A.copy_player_from_slot()
         if  button_selected == 2.30 :
+            The_game_window.surface.blit(MENU_FONT.render(' 0%.......100%', 1, GREY),(The_game_window.game_menu_x_end, 30 * The_game_window.menu_line_spacing))
+            The_game_window.surface.blit(MENU_FONT.render('  ====>', 1, GREY),(The_game_window.game_menu_x_end, 31 * The_game_window.menu_line_spacing))
+            pygame.display.flip()
             The_reff.coach_team_A.paste_player_from_other_slot()
         if  button_selected == 2.40 :#edit
                 The_game_window.buttons[index_button_loop].set_selected_status(True)
@@ -489,7 +487,7 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
                 else:
                     The_game_window.buttons[index_button_loop].set_selected_status(False)
                     The_game_window.buttons[index_button_loop - 1].set_selected_status(True)
-                    lower_screen = "notset"
+                    lower_screen = Screens.welcome.value
 
         if  button_selected == 2.60 :
             The_reff.coach_team_A.choose_team_from_selection()
@@ -636,7 +634,7 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
                             model = The_reff.list_of_ingamers[ingamers_loop].model
                             actions = 5 # hrac muze udelat 5 akci
 
-                            for ingamers_loop in range (0, coach.trening_repetition_total):
+                            for trening_repetitions in range (0, coach.trening_repetition_total):
 
                                 run_RE_trening(model, actions, The_RE_env, trained_player_ID, coach.RE_trening_sesion_runs )
                                 coach.trening_repetition_sequence = coach.trening_repetition_sequence + 1
@@ -647,7 +645,7 @@ def f_menu_selected(position_clicked,The_game_window,The_field,The_reff,screen_I
                             lower_screen = Screens.trainingautomateddone.value
                             full_path = get_path_home_folder()
                             trained_player.model= load_model( full_path +  trained_player_ID + ".h5")
-                            coach.update_trening_time(trained_player_ID, training_runs)
+                            coach.update_trening_player(trained_player_ID, 2, TreningType.automated.value  ,trained_player)
                             '''
                             trained_player.save_trening_time (coach.RE_trening_sesion_runs)
                             for save_loop  in range (0,len(coach.loaded_teams_xml)):

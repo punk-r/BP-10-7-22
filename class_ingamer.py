@@ -1,4 +1,3 @@
-
 import pygame
 clock = pygame.time.Clock()
 import sys

@@ -8,7 +8,7 @@ def draw_teams_for_game(The_game_window,The_field,The_reff):
     shift_from_menu = The_game_window.mngmt_shift_from_menu
     table_line_spacing = int(1.8 * The_game_window.menu_line_spacing)
     column_width = 1* The_game_window.mngmt_column_width
-    lines = 14
+    lines = 12
     columns = 10
 
     table_top = The_game_window.heading_shift
@@ -16,39 +16,45 @@ def draw_teams_for_game(The_game_window,The_field,The_reff):
     table_bottom = table_top + lines * table_line_spacing
     table_right = table_left + columns * column_width
 
-    team_shift_y = 7 * table_line_spacing  # nazev teamu + 6*hrac = 7
+    team_shift_y = 6 * table_line_spacing  #  lines nazev teamu + 5*hrac = 6
     draw_columns = True
 
     header = MENU_FONT_HEADING.render('Teams for game', 1, GREY)
     The_game_window.surface.blit(header,(table_left, 0.1 * The_game_window.menu_line_spacing))
     headings = f_teams_for_game_headings_text(The_game_window.language)
 
+
+
     for teams_loop in range (0,2):
         draw_columns = True
         team_name = MENU_FONT.render("Team " + The_reff.teams_for_game[teams_loop][0][0] + "    *"  \
                                     + The_reff.teams_for_game[teams_loop + 2] + "*", 1, GREY)
 
-        The_game_window.surface.blit(team_name,(table_left ,table_line_spacing  \
-                                                + table_top + teams_loop * team_shift_y))
+        The_game_window.surface.blit(team_name,(table_left , table_top + teams_loop * team_shift_y))
 
         pygame.draw.lines(The_game_window.surface, GREY_LINES, True, \
-                                ((table_left, table_top + teams_loop * team_shift_y), \
-                                 (table_right, table_top + teams_loop * team_shift_y)), 1)
-
+                                ((table_right, table_top + teams_loop * team_shift_y), (table_left, table_top + teams_loop * team_shift_y)), 2)
         pygame.draw.lines(The_game_window.surface, GREY_LINES, True, \
-                                ((table_right, table_bottom), (table_left, table_bottom)), 2)
+                        ((table_right, table_bottom), (table_left, table_bottom)), 2)
 
         # lines
-        for player_loop in range (1,6):  # 1 nazev teamu +  5 hracu  => 6 radku
+        for player_loop in range (0,5):  # 0 nazev teamu +  5 hracu  => 6 radku
             pygame.draw.lines(The_game_window.surface, GREY_LINES, True, \
                                 ((table_left, (player_loop+1) * table_line_spacing + table_top + teams_loop * team_shift_y ), \
-                                 (table_right, (player_loop+1) * table_line_spacing + table_top + teams_loop * team_shift_y )), 1)
+                                 (table_right,(player_loop+1) * table_line_spacing + table_top + teams_loop * team_shift_y )), 1)
 
-            player = MENU_FONT.render( The_reff.teams_for_game[teams_loop][player_loop][0]   , 1, GREY)
-            The_game_window.surface.blit(player, (table_left, (player_loop + 1) * table_line_spacing + table_top + teams_loop * team_shift_y))
+            #The_game_window.surface.blit(player, (table_left, (player_loop + 1) * table_line_spacing + table_top + teams_loop * team_shift_y))
+            # jmeno, "trenovano" ,"trening" ,"skills" , "zapasu", "vyher"
+            players = The_reff.teams_for_game[teams_loop] [1:]
+            team_details = ["a","a","a","a","a","a","a","a","a"," "]
+            team_details[0] = players[player_loop][0]
+            team_details[1] = TreningType_text(str(players[player_loop][7]))
+            team_details[2] = "  " + str(players[player_loop][4])
+            team_details[3] = "  " +str(players[player_loop][3])
 
             # columns
-            for player_column in range (0,columns):
+            new_shift = 0
+            for player_column in range (0,columns ):
                 name_shift = 1 if player_column == 1 else 0
                 if draw_columns == True:
                     pygame.draw.lines(The_game_window.surface, GREY_LINES, True, \
@@ -57,6 +63,14 @@ def draw_teams_for_game(The_game_window,The_field,The_reff):
 
                     a_header = MENU_FONT.render(headings[player_column], 1, GREY)
                     The_game_window.surface.blit(a_header,(player_column * column_width + table_left, table_top + teams_loop * team_shift_y))
+
+
+                if player_column ==1:
+                    new_shift =1
+
+                text_test = MENU_FONT.render(  team_details[player_column], 1, GREY)
+                The_game_window.surface.blit(text_test,(( player_column+new_shift  )* column_width + table_left,  \
+                                                       table_top + (player_loop+1 )   * table_line_spacing + teams_loop * team_shift_y))
 
             draw_columns = False
             pygame.draw.lines(The_game_window.surface, GREY_LINES, True,((table_right, table_top), \
@@ -117,15 +131,24 @@ def draw_stats(The_game_window,The_reff):
     # tisk teamu a hracu
     # domaci teamy 10 slotu , + 2 sloty hoste   => 12, jina barva pro vybrany team
     for teams_loop in range (0,len(all_teams)):
-
+        team_details = ["a","a","a","a","a"]
         if all_teams[teams_loop] != SavingType.empty_team_slot.value:  # n prvni char z "none"
             team_color = GREY_LINES
             if all_teams[teams_loop][0][1] != "original" :
                 team_color = RED
-            team_details = MENU_FONT.render("TEAM " + all_teams[teams_loop][0][0], 1, team_color)
+            team_name = MENU_FONT.render("TEAM " + all_teams[teams_loop][0][0], 1, team_color)
+
+            team_details[0] =  TreningType_text(str(The_reff.coach_team_A.check_team_training_type(all_teams,teams_loop)))
+            team_details[1] = str(The_reff.coach_team_A.team_trenings_summary(all_teams,teams_loop))
+            team_details[2] =  str(The_reff.coach_team_A.team_skills_averadge(all_teams,teams_loop))
+            for print_loop in range (0,3):
+                team_details_rendered = MENU_FONT.render( team_details[print_loop] , 1, team_color)
+                The_game_window.surface.blit(team_details_rendered,  \
+                            (table_left + leter_shift_from_boarder + (1 + print_loop) * column_width, table_top + player_line_shift + column_teams_shift))
+
         else:
-            team_details = MENU_FONT.render( "  --  ", 1, GREY)
-        The_game_window.surface.blit(team_details, (table_left + leter_shift_from_boarder, \
+            team_name = MENU_FONT.render( "  --  ", 1, GREY)
+        The_game_window.surface.blit(team_name, (table_left + leter_shift_from_boarder, \
                                                 table_top + player_line_shift + column_teams_shift))
 
         player_line_shift = player_line_shift +  table_line_spacing   # *3 team ma jen jmeno a musi se posunout 3 linie dolus
@@ -392,7 +415,7 @@ def f_print_treningman_buttons(The_game_window,lower_screen_ID):
                     button_shift = 0
 
                 start_button_location  = [The_game_window.buttons[loop].x_corner , The_game_window.buttons[loop].y_corner ]
-                selected_button_location = The_game_window.buttons[loop].x_corner + button_shift * 2 * The_game_window.buttons[loop].size[0] 
+                selected_button_location = The_game_window.buttons[loop].x_corner + button_shift * 2 * The_game_window.buttons[loop].size[0]
                 button_size = The_game_window.buttons[loop].size   # lenght, high
 
     counter = 1
@@ -473,9 +496,12 @@ def draw_edited_player_details (player,The_game_window):
 
 def f_print_createPlr_details(The_game_window,trainig_code,is_player):
     shift_x = 0
-    shift_y = 0
+    shift_y_original = 2  # 2 radku se vynechaji
+    shift_y = 2
     text = f_create_player_text(The_game_window.language)
     #print (trainig_code)
+    The_game_window.surface.fill(BLACK,(The_game_window.game_menu_x_end,The_game_window.game_menu_y_end +5, 300,100))
+
     for text_loop in range (0,len(text)):
         a = trainig_code[text_loop]
         color_print = GREEN if (a == True or a == 'True') else RED
@@ -489,9 +515,9 @@ def f_print_createPlr_details(The_game_window,trainig_code,is_player):
                                                    The_game_window.game_menu_y_end + The_game_window.menu_line_spacing * shift_y))
 
         shift_y = shift_y + 1
-        if text_loop == 6 or text_loop == 12 :
-            shift_x = shift_x + 3*The_game_window.mngmt_column_width
-            shift_y = 0
+        if text_loop == 4 or text_loop == 9 :
+            shift_x = shift_x + int(2.5 * The_game_window.mngmt_column_width)
+            shift_y = shift_y_original
 
 # print hodnoty z treningu - pocet uskutecnenych  a planovanych 'runs'
 def f_print_trening_progress(The_game_window,The_field,coach_team_A,coach_team_B):
@@ -519,19 +545,20 @@ def f_print_player_details_off_game(screen_ID,The_reff,The_game_window):
 
     if  coach.selected_slot_team_management[1] > 0 :
         team = coach.selected_slot_team_management[0]
-        player = coach.selected_slot_team_management[1]
+        player_index = coach.selected_slot_team_management[1]
         if coach.loaded_teams_xml[team] !=  SavingType.empty_team_slot.value and \
-             coach.loaded_teams_xml[team][player] != SavingType.empty_player_slot.value:
+             coach.loaded_teams_xml[team][player_index] != SavingType.empty_player_slot.value:
 
-            player = coach.loaded_teams_xml[team][player]
-            shift_vertikal = The_game_window.game_menu_y_end
-            shift_horisontal = 6 * The_game_window.mngmt_column_width                                                                                               #nejak lip definovat  hodnotu
-            list_of_tags =[ "pl_name: ", "pl_ID: ","type: ","skills: ","trening_time: "]
+            player = coach.loaded_teams_xml[team][player_index]
+            shift_vertikal = The_game_window.game_menu_y_end + 1 * The_game_window.menu_line_spacing
+            shift_horisontal = int(7 * The_game_window.mngmt_column_width)                                                                                               #nejak lip definovat  hodnotu
+            list_of_tags =[ "pl_name: ", "pl_ID: ","trentype: ","skills: ","trening_time: ","trenset: ","wins: ","trentype: "]
 
-            for data_index in range (0,5):
-                data = CREATENO_FONT.render(  list_of_tags[data_index] + player[data_index], 1, GREY)
-                The_game_window.surface.blit(data,( shift_horisontal, shift_vertikal ))
-                shift_vertikal = shift_vertikal + The_game_window.menu_line_spacing
+            for data_index in range (1,8):
+                if data_index != 5:
+                    data = CREATENO_FONT.render(  list_of_tags[data_index] + player[data_index], 1, GREY)
+                    The_game_window.surface.blit(data,( shift_horisontal, shift_vertikal ))
+                    shift_vertikal = shift_vertikal + The_game_window.menu_line_spacing
 
             # tisk skils set
             f_print_createPlr_details(The_game_window,player[5],True)
@@ -675,20 +702,17 @@ def pythagoras_distance (location_1,location_2):                                
     ingamer_opposite =  abs (location_1[1] -  location_2[1])
     ingamer_hypotensue = sqrt(ingamer_adjescent **2 + ingamer_opposite **2)
 
-    return ingamer_hypotensue
+    return round(ingamer_hypotensue,4)
 
 # napoveda
-
 
 def f_print_help_trening(The_game_window):
     text =  f_help_trening_text(The_game_window.language)
     The_game_window.surface.blit(text,(The_game_window.game_menu_x_end, The_game_window.menu_line_spacing))
 
-
 def f_print_RE_trening_inprogress(The_game_window):
     text =  f_RE_trening_inprogress_text(The_game_window.language)
     The_game_window.surface.blit(text,(The_game_window.game_menu_x_end, 20 * The_game_window.menu_line_spacing))
-
 
 def f_print_RE_trening_done(The_game_window):
     text =  f_RE_trening_done_text(The_game_window.language)
@@ -697,6 +721,11 @@ def f_print_RE_trening_done(The_game_window):
 def f_print_RE_trening_started(The_game_window):
     text =  f_RE_trening_started_text(The_game_window.language)
     The_game_window.surface.blit(text,(The_game_window.game_menu_x_end, 30 * The_game_window.menu_line_spacing))
+
+def f_print_message_in_lower_screen(text):
+    The_game_window.surface.blit(text,(The_game_window.game_menu_x_end, 30 * The_game_window.menu_line_spacing))
+
+
 
 def f_print_help(The_game_window):
     helpText="none"
@@ -733,6 +762,9 @@ def print_check_pin(The_game_window):
 
 
 
+
+
+
 #
 #-------------------------------------------------------texty--------------------------------------------------------------
 
@@ -748,7 +780,7 @@ def f_stats_text (language):
 
 def f_teams_for_game_headings_text (language):
     if language == "CZ":
-        text = [" "," " ,"note_b" ,"note_c" , "note_d", "note_e", "selected","note_a" ,"note_b" ,"note_c" , "note_d", "note_e", "selected"]
+        text = [" "," " ,"trenovano" ,"trening" ,"skills" , "zapasu", "vyher", "note","note_a" ,"note_b" ,"note_c" , "note_d", "note_e", "selected"]
     else:
         text = [" "," " ,"note_b" ,"note_c" , "note_d", "note_e", "selected","note_a" ,"note_b" ,"note_c" , "note_d", "note_e", "selected"]
     return text
@@ -796,27 +828,31 @@ def f_help_text(language):
     if language == "CZ":
         helpText =[' ', \
                     'TRENER   ', \
-                    ' -Team management: hra ma ulozen jeden vytvoreny team hrac můze byt kopirovan do noveho teamu, jakmile je 5 hracu v teamu zmena musi  ', \
-                    '   byt ulozena a to oznacenim jmena teamu a tlacitkem ulozit zmeny, v pripade kopirovani hrace do prazdneho  teamu se novy team vytvori automaticky', \
+                    ' -Team management: ', \
+                    '   Aplikace ma ulozen jeden vytvoreny (default) team. Z tohoto teamu můze byt hrac kopirovan do jineho ci noveho teamu. Hrac tez muze' , \
+                    '   byt generovan zcela novy, v tomto pripade lze urcit jak dobry hrac bude (level). Jakmile je 5 hracu v teamu zmena musi byt ulozena. ',  \
+                    '   Uzivatel oznaci team a v kombinaci s tlacitkem ulozit zmeny se team zapise.Pokud je zapis v poradku team zmeni barvu z cervene na bilou.',   \
+                    '   V pripade kopirovani/vytvoreni hrace do prazdneho teamu, hra vytvori novy automaticky. Zkopirovani hraci ziskaji stejny  level i ',  \
+                    '   natrenovane schopnosti od originalniho hrace po oznaceni teamu jej lze vybrat do utkani ',  \
                     ' -Stats: staistika hracu a teamu ', \
-                    ' -Trening: trenovany hrac je oznacen a potvrzen  (team A), pote musi byt oznacen tym proti kteremu se bude trenovat ( team B ), prozatim jen', \
-                    '   manualni trening je funkcni ( H / H) prave tlacitko mysi vytvori nove rozestaveni pro trening , klavesa -p- ukonci trening', \
-                    '   trening ma vliv na hrace pouze po dostazeni 5000 akci, kdy je trening vyhodnocen pote se muze v treningu pokracovat pocet akci', \
-                    '   je vyobrazen pod hrsitem  kotrola hrace pri hre je vysvetlena nize', \
+                    ' -Trening: ', \
+                    '   Vzdy je trenovan pouze jeden hrac. Trenovany hrac musi byt uzivatelem oznacen a potvrzen, pote musi byt oznacen tym proti kteremu se bude ', \
+                    '   trenovat. Lze vybrat v jake casti hriste bude trening probihat (brankar - 1. tretina hriste) ', \
+                    '   MANUALNI trening znamena ze uzivatel sam trenuje fotbaloveho hrace(supervised). Zde jsou dve moznisti a) kde je pohyb ostatnich hracu ', \
+                    '   vypnut b) hraci se pohybuji . Uzivatel muze vybrat jeden z 5 ukonu a to: pootocit hrace , udelat krok, kopnout do mice a nebo povtrdit ', \
+                    '   /no action/, napr. pokud se trenuje brankar a mic je na druhe strane hriste neocekava se od brankare zadna akce. Uzivatel muze prepmnout ', \
+                    '   na novou herni situaci aby trenink byl co nejvice efektivni. Trening ma vliv na hrace pouze po dostazeni celeho treningu (stav vyobrazen), ', \
+                    '   pote je trening vyhodnocen .AUTOMATIZOVANY trening je plnne rizen pocitacem, v prubehu treningu je uzamcena obrazovka a tez vyobrazen prubeh.', \
+                    '   Aby byl tento trening efektivni je zapotrebi alespon 1M akci, jeden trening ja nastaven na 10 opakovani pro 10k behu => 100000', \
+                    '   poznamka: jedna akce/beh je mysleno jeden vyber z 5 moznych ukonu, pokud se hrac otoci udela krok a pote se znovu otoci vykonal 3 akce. ', \
                     '   ' , \
                     'ROZHODCI  ', \
-                    ' -Delka utkani  ', \
-                    ' -Potvrzeni teamu do hry: teamy jsou vytvoreny v  -team management- mohou byt vybrany do zapasu, cervene oznacene teamy nejsou uplne ', \
-                    '   rozhodci je bude ignorovat ,oznaceny hrac je  ovladan  mysi ta urcuje smer a klavesa -w-  je krok,mezernikem je proveden kop do mice  ', \
+                    ' -Potvrzeni teamu do hry: teamy jsou vybrany do zapasu v  /team management/, cervene oznacene teamy nejsou ulozene/uplne rozhodci je neuzna .', \
+                    '  Lze vybrat ze dvou zapasu uzivatel proti Pc a nebo dva teamy ovladane pocitacem proti sobe. pote je spusten zapas.' , \
+                    '  Pri prvni forme hry lze oznaci z kontrolovaneho teamu jakehokoli hrace ,oznaceny hrac je  ovladan  mysi ta urcuje smer, klavesa -w- je krok, ', \
+                    '  mezernikem je proveden kop do mice, pokud je hra pozastaven lze se vratit z menu tlacitkem /Zpet na zapas /. Lze mit zapocatou poze jednu hru. ', \
                     ' -Nastaveni hriste  ', \
-                    ' -Zpet na zapas   ', \
-                    'NASTAVENI  ', \
-                    ' -lokalize  ', \
-                    ' -velikost okna aplikace  ', \
-                    'LAB MODE  ', \
-                    ' -zapnout lab mode  ', \
-                    ' -vypnout grafikku  ', \
-                    'NAPOVDEA  ']
+                    ' -Zpet na zapas   ' ]
 
     else:
         helpText =['FLATBALL', \
@@ -888,7 +924,15 @@ def f_help_trening_text(language):
         text = MENU_FONT.render(' space kick , w  step, e no action,p end trening ,mys pravy  plrs nova pozice', 1, GREY)
     else:
         text = MENU_FONT.render('ukukukspace kick  w  step e no action:D p end trening mys pravy  plrs nova pozice', 1, GREY)
+    return  text
 
+def f_creating_player_text(language):
+    text = "null"
+    return text
+    if language == "CZ":
+        text = MENU_FONT.render(' generovani hrace', 1, GREY)
+    else:
+        text = MENU_FONT.render('generovani hrace engl', 1, GREY)
     return  text
 
 
